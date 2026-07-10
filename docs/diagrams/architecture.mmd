@@ -1,0 +1,51 @@
+flowchart TD
+    subgraph SRC["Public Data Sources"]
+        A1[Eurostat]
+        A2[Our World in Data]
+        A3[National Stats: DESTATIS / Statistik Austria / BFS]
+    end
+
+    subgraph ING["Ingestion - Python"]
+        B1[python/app/ingestion]
+    end
+
+    subgraph STORE["Storage"]
+        C1[(Azure Blob Storage raw)]
+    end
+
+    subgraph LAKE["Databricks Lakehouse"]
+        D1[Bronze Delta]
+        D2[Silver Delta]
+        D3[Gold Delta - KPI tables]
+    end
+
+    subgraph SERVE["Serving"]
+        E1[(Azure SQL / PostgreSQL)]
+        E2[FastAPI]
+    end
+
+    subgraph ML["ML / AI"]
+        F1[MLflow Forecasting]
+        F2[Anomaly Detection]
+        F3[Azure OpenAI - LLM Assistant]
+    end
+
+    subgraph APP["Dashboard"]
+        G1[R Shiny - EN/DE]
+        G2[rmarkdown Report Export]
+    end
+
+    A1 --> B1
+    A2 --> B1
+    A3 --> B1
+    B1 --> C1
+    C1 --> D1 --> D2 --> D3
+    D3 --> E1
+    E1 --> E2
+    D3 --> F1
+    D3 --> F2
+    F1 --> E2
+    F2 --> E2
+    F3 --> E2
+    E2 --> G1
+    G1 --> G2

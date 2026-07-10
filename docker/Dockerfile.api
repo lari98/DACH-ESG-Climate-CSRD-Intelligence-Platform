@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY api/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY api/ .
+COPY data/sample /app_data/sample
+
+ENV DATA_MODE=sample
+ENV RAW_DIR=/app_data/raw
+ENV CLEANED_DIR=/app_data/cleaned
+ENV SAMPLE_DIR=/app_data/sample
+
+EXPOSE 8000
+CMD ["uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

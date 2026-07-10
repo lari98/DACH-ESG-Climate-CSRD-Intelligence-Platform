@@ -1,0 +1,41 @@
+company_id,company_name,country_code,sector,scope1_tco2e,scope2_tco2e,scope3_tco2e,esg_readiness_score,csrd_readiness_score,reporting_gaps_count,data_quality
+SAMPLE-001,Sample Company 1,CH,Transportation,156873.7,33096.8,71580.1,41.4,35.4,5,sample
+SAMPLE-002,Sample Company 2,CH,Financial Services,35024.3,27905.1,625166.9,73.0,19.8,6,sample
+SAMPLE-003,Sample Company 3,AT,Transportation,104235.7,24978.8,379288.9,87.9,58.8,11,sample
+SAMPLE-004,Sample Company 4,DE,Real Estate,119506.4,113140.5,270154.2,49.2,81.9,6,sample
+SAMPLE-005,Sample Company 5,CH,Industrials,122313.3,32897.7,438106.5,49.2,65.2,12,sample
+SAMPLE-006,Sample Company 6,AT,Manufacturing,210206.2,110361.1,882688.3,60.1,83.0,9,sample
+SAMPLE-007,Sample Company 7,CH,Energy,21444.9,51547.8,780432.5,33.6,34.5,5,sample
+SAMPLE-008,Sample Company 8,DE,Transportation,82048.0,91395.3,342455.3,76.4,77.4,4,sample
+SAMPLE-009,Sample Company 9,DE,Transportation,5336.1,64822.4,899917.2,46.2,63.8,12,sample
+SAMPLE-010,Sample Company 10,CH,Energy,188681.2,113963.5,181025.9,21.5,26.4,2,sample
+SAMPLE-011,Sample Company 11,AT,Financial Services,141210.4,26312.2,630119.5,77.5,27.6,9,sample
+SAMPLE-012,Sample Company 12,CH,Financial Services,194559.1,19819.1,281312.9,63.4,84.7,9,sample
+SAMPLE-013,Sample Company 13,CH,Real Estate,99465.3,85858.8,70244.8,71.8,62.0,1,sample
+SAMPLE-014,Sample Company 14,CH,Consumer Goods,212648.2,72129.3,110707.4,93.8,73.7,5,sample
+SAMPLE-015,Sample Company 15,CH,Real Estate,165549.6,8461.0,583493.8,20.9,46.5,7,sample
+SAMPLE-016,Sample Company 16,DE,Real Estate,240216.5,76343.1,746179.2,73.0,47.7,11,sample
+SAMPLE-017,Sample Company 17,CH,Consumer Goods,154170.1,110370.2,697628.0,54.9,76.9,9,sample
+SAMPLE-018,Sample Company 18,AT,Technology,213002.4,99721.6,79823.3,86.1,33.3,7,sample
+SAMPLE-019,Sample Company 19,CH,Real Estate,84431.0,59417.9,293862.7,56.6,41.6,4,sample
+SAMPLE-020,Sample Company 20,AT,Consumer Goods,220139.8,84201.8,250089.2,20.8,86.1,1,sample
+SAMPLE-021,Sample Company 21,DE,Real Estate,122400.2,91028.1,622167.2,68.4,51.8,12,sample
+SAMPLE-022,Sample Company 22,DE,Financial Services,73911.8,48647.3,220488.0,69.8,42.7,8,sample
+SAMPLE-023,Sample Company 23,CH,Technology,106663.2,89563.1,299050.6,72.7,35.3,4,sample
+SAMPLE-024,Sample Company 24,DE,Financial Services,180460.4,38002.6,669107.2,91.3,66.8,3,sample
+SAMPLE-025,Sample Company 25,DE,Transportation,69486.7,70832.5,684666.7,64.8,88.5,3,sample
+SAMPLE-026,Sample Company 26,AT,Industrials,90539.8,36411.7,637800.6,29.5,18.4,0,sample
+SAMPLE-027,Sample Company 27,CH,Consumer Goods,174505.6,15328.3,781878.2,56.8,80.5,9,sample
+SAMPLE-028,Sample Company 28,AT,Transportation,119939.2,41016.6,869016.9,38.9,79.6,1,sample
+SAMPLE-029,Sample Company 29,DE,Real Estate,123190.8,69327.1,618433.0,31.4,75.8,4,sample
+SAMPLE-030,Sample Company 30,DE,Industrials,30053.7,91780.3,546473.3,79.3,31.9,8,sample
+SAMPLE-031,Sample Company 31,AT,Transportation,227171.8,35822.9,530495.6,52.2,57.6,0,sample
+SAMPLE-032,Sample Company 32,CH,Financial Services,236923.8,25093.0,191500.6,69.5,26.8,2,sample
+SAMPLE-033,Sample Company 33,CH,Financial Services,39554.9,49140.4,621055.3,55.2,17.4,4,sample
+SAMPLE-034,Sample Company 34,CH,Consumer Goods,175895.4,54593.0,619271.7,89.3,74.1,10,sample
+SAMPLE-035,Sample Company 35,CH,Industrials,106572.2,65438.6,583576.0,88.1,77.0,1,sample
+SAMPLE-036,Sample Company 36,DE,Manufacturing,198260.8,71486.3,742167.8,89.1,47.9,7,sample
+SAMPLE-037,Sample Company 37,CH,Consumer Goods,175083.6,113132.6,451424.0,57.0,21.0,0,sample
+SAMPLE-038,Sample Company 38,AT,Technology,151126.6,3298.6,207574.1,70.6,79.5,9,sample
+SAMPLE-039,Sample Company 39,DE,Consumer Goods,144273.6,91620.5,159321.3,58.9,48.2,4,sample
+SAMPLE-040,Sample Company 40,DE,Real Estate,158878.8,59108.8,83935.7,46.1,40.0,10,sample

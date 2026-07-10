@@ -1,0 +1,112 @@
+/* Enterprise DACH theme: clean, minimal, audit-friendly. No childish colors. */
+
+:root {
+  --primary: #0B3D2E;
+  --secondary: #1F5F4F;
+  --accent: #C9A24B;
+  --bg-light: #F7F8F7;
+  --bg-dark: #12181A;
+  --text-light: #1A1F1E;
+  --text-dark: #EDEFEC;
+}
+
+body, .content-wrapper, .main-sidebar {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+.skin-green .main-header .logo,
+.skin-green .main-header .navbar {
+  background-color: var(--primary) !important;
+}
+
+.skin-green .main-sidebar {
+  background-color: #0E241D;
+}
+
+.box {
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.box.box-solid.box-success > .box-header {
+  background-color: var(--secondary);
+}
+
+.small-box, .info-box {
+  border-radius: 6px;
+}
+
+.lang-toggle-btn {
+  background-color: var(--accent);
+  color: var(--text-light);
+  border: none;
+  font-weight: 600;
+}
+
+.sample-data-badge {
+  color: #7a6a3a;
+  font-style: italic;
+  font-size: 0.85em;
+  padding-top: 8px;
+}
+
+/* Dark mode override, toggled via shinyjs::addClass(body, "dark-mode") */
+body.dark-mode, body.dark-mode .content-wrapper {
+  background-color: var(--bg-dark) !important;
+  color: var(--text-dark) !important;
+}
+body.dark-mode .box {
+  background-color: #1B2426;
+  color: var(--text-dark);
+}
+body.dark-mode .box-header {
+  background-color: #223028 !important;
+}
+
+/* --- Phase 9 additions: accessibility & responsiveness --- */
+
+/* Visible keyboard focus outline (WCAG 2.4.7) on all interactive elements */
+a:focus, button:focus, input:focus, select:focus, textarea:focus,
+.btn:focus, .selectize-input:focus {
+  outline: 3px solid var(--accent) !important;
+  outline-offset: 2px !important;
+}
+
+/* Ensure minimum contrast for muted/italic text (sample-data badge etc.) */
+.sample-data-badge {
+  color: #5c4f27; /* darkened from #7a6a3a to meet WCAG AA on light background */
+}
+body.dark-mode .sample-data-badge {
+  color: #d8c98a;
+}
+
+/* Skip-to-content link for screen reader / keyboard users */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: auto;
+  background: var(--primary);
+  color: white;
+  padding: 8px 16px;
+  z-index: 10000;
+}
+.skip-link:focus {
+  left: 8px;
+  top: 8px;
+}
+
+/* Responsive breakpoints: stack KPI/box columns on tablet and mobile widths */
+@media (max-width: 991px) {
+  .box { margin-bottom: 12px; }
+  .content-wrapper { padding: 0 8px; }
+}
+@media (max-width: 767px) {
+  .main-sidebar { width: 100% !important; }
+  .content-wrapper { margin-left: 0 !important; }
+}
+
+/* Ensure DT/plotly outputs don't overflow their box on narrow screens */
+.dataTables_wrapper, .plotly, .leaflet-container {
+  max-width: 100%;
+  overflow-x: auto;
+}

@@ -1,0 +1,61 @@
+---
+title: "CSRD Readiness & Climate Risk Report"
+output:
+  html_document:
+    theme: flatly
+    toc: true
+  pdf_document:
+    toc: true
+params:
+  country: "DE"
+  lang: "en"
+  co2_data: NULL
+  risk_data: NULL
+  company_data: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(dplyr)
+library(ggplot2)
+
+co2 <- params$co2_data %>% filter(country_code == params$country)
+risk <- params$risk_data %>% filter(country_code == params$country)
+companies <- params$company_data %>% filter(country_code == params$country)
+is_de <- params$lang == "de"
+```
+
+## `r if (is_de) "Zusammenfassung" else "Executive Summary"`
+
+`r if (is_de) sprintf("Dieser Bericht fasst CO2-Emissionen, Klimarisiko und CSRD-Bereitschaft für %s zusammen.", params$country) else sprintf("This report summarizes CO2 emissions, climate risk, and CSRD readiness for %s.", params$country)`
+
+- **`r if (is_de) "Letztes Jahr" else "Latest year"`**: `r max(co2$year, na.rm = TRUE)`
+- **`r if (is_de) "CO2-Emissionen (Mt)" else "CO2 emissions (Mt)"`**: `r round(tail(co2$co2_emissions_mt, 1), 1)`
+- **`r if (is_de) "Anteil erneuerbare Energien" else "Renewable share"`**: `r round(tail(co2$renewable_share_pct, 1), 1)`%
+- **`r if (is_de) "Durchschnittliches Klimarisiko" else "Average climate risk"`**: `r round(mean(risk$composite_climate_risk_score, na.rm = TRUE), 1)`
+- **`r if (is_de) "Durchschnittliche CSRD-Bereitschaft" else "Average CSRD readiness"`**: `r round(mean(companies$csrd_readiness_score, na.rm = TRUE), 1)`%
+
+## `r if (is_de) "CO2-Trend" else "CO2 Trend"`
+
+```{r}
+ggplot(co2, aes(x = year, y = co2_emissions_mt)) +
+  geom_line(color = "#0B3D2E", linewidth = 1.1) +
+  geom_point(color = "#C9A24B") +
+  theme_minimal() +
+  labs(x = NULL, y = "Mt CO2")
+```
+
+## `r if (is_de) "Regionales Klimarisiko" else "Regional Climate Risk"`
+
+```{r}
+knitr::kable(risk %>% select(region, composite_climate_risk_score, risk_level))
+```
+
+## `r if (is_de) "Unternehmens-CSRD-Bereitschaft" else "Company CSRD Readiness"`
+
+```{r}
+knitr::kable(companies %>% select(company_name, sector, csrd_readiness_score, reporting_gaps_count))
+```
+
+---
+`r if (is_de) "Hinweis: Enthält ggf. Beispieldaten (data_quality = 'sample'), die zur Demonstration erzeugt wurden." else "Note: may include sample data (data_quality = 'sample') generated for demonstration purposes."`

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DACH ESG, Climate Risk & CSRD Intelligence Platform — Preview</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  --bg-primary:#f4f6f4; --bg-card:#ffffff; --bg-header:#0B3D2E;
+  --text-primary:#1a1f1e; --text-secondary:#5c6b63; --text-on-dark:#ffffff;
+  --accent:#C9A24B; --risk-low:#4C8C6B; --risk-med:#D6A24B; --risk-high:#B24C4C;
+  --gap:16px; --radius:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.5;}
+.dashboard-container{max-width:1480px;margin:0 auto;padding:var(--gap);}
+.dashboard-header{background:var(--bg-header);color:var(--text-on-dark);padding:18px 24px;border-radius:var(--radius);margin-bottom:var(--gap);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.dashboard-header h1{font-size:18px;font-weight:600;}
+.dashboard-header p{font-size:11.5px;color:rgba(255,255,255,0.75);margin-top:2px;}
+.api-status{font-size:11.5px;padding:4px 10px;border-radius:12px;font-weight:600;}
+.api-status.live{background:#2e7d4f;color:#fff;}
+.api-status.offline{background:#7a5f1a;color:#fff;}
+.filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.filter-group{display:flex;flex-direction:column;gap:3px;}
+.filter-group label{font-size:11px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.4px;}
+.filter-group select{padding:6px 10px;border:1px solid rgba(255,255,255,0.25);border-radius:4px;background:rgba(255,255,255,0.12);color:#fff;font-size:13px;}
+.filter-group select option{background:#0B3D2E;color:#fff;}
+.notice{background:#fff8e6;border:1px solid #e8d29a;color:#7a5f1a;padding:10px 16px;border-radius:var(--radius);margin-bottom:var(--gap);font-size:12.5px;}
+.tab-nav{display:flex;flex-wrap:wrap;gap:4px;background:var(--bg-card);border-radius:var(--radius);padding:6px;margin-bottom:var(--gap);box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+.tab-btn{border:none;background:transparent;padding:9px 14px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--text-secondary);cursor:pointer;white-space:nowrap;}
+.tab-btn:hover{background:#eef1ee;}
+.tab-btn.active{background:var(--bg-header);color:#fff;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--gap);margin-bottom:var(--gap);}
+.kpi-card{background:var(--bg-card);border-radius:var(--radius);padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-left:4px solid var(--bg-header);}
+.kpi-label{font-size:11.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.kpi-value{font-size:24px;font-weight:700;}
+.kpi-sub{font-size:11.5px;color:var(--text-secondary);margin-top:3px;}
+.chart-row{display:grid;grid-template-columns:2fr 1fr;gap:var(--gap);margin-bottom:var(--gap);}
+.chart-row.equal{grid-template-columns:1fr 1fr;}
+.chart-row.triple{grid-template-columns:1fr 1fr 1fr;}
+.chart-container{background:var(--bg-card);border-radius:var(--radius);padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+.chart-container h3{font-size:13.5px;font-weight:600;margin-bottom:12px;color:var(--text-primary);}
+.chart-container canvas{max-height:300px;}
+#leaflet-map{height:460px;border-radius:6px;}
+.table-section{background:var(--bg-card);border-radius:var(--radius);padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow-x:auto;margin-bottom:var(--gap);}
+.table-section h3{font-size:13.5px;font-weight:600;margin-bottom:12px;}
+.data-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.data-table thead th{text-align:left;padding:9px 10px;border-bottom:2px solid #e2e6e2;color:var(--text-secondary);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;cursor:pointer;user-select:none;}
+.data-table thead th:hover{color:var(--text-primary);}
+.data-table tbody td{padding:8px 10px;border-bottom:1px solid #f0f2f0;}
+.data-table tbody tr:hover{background:#f7f8f7;}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;color:#fff;}
+.badge.low{background:var(--risk-low);} .badge.medium{background:var(--risk-med);} .badge.high{background:var(--risk-high);}
+.panel-box{background:var(--bg-card);border-radius:var(--radius);padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-bottom:var(--gap);}
+.panel-box h3{font-size:13.5px;font-weight:600;margin-bottom:10px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:12px;}
+.form-grid label{display:block;font-size:11.5px;color:var(--text-secondary);margin-bottom:4px;}
+.form-grid input,.form-grid select{width:100%;padding:7px 9px;border:1px solid #d9ded9;border-radius:5px;font-size:13px;}
+button.primary{background:var(--bg-header);color:#fff;border:none;padding:9px 18px;border-radius:5px;font-size:13px;font-weight:600;cursor:pointer;}
+button.primary:hover{opacity:.9;}
+textarea{width:100%;padding:9px;border:1px solid #d9ded9;border-radius:5px;font-size:13px;font-family:inherit;resize:vertical;}
+.ai-answer{margin-top:12px;padding:12px 14px;background:#f7f8f7;border-radius:6px;font-size:13px;border-left:3px solid var(--accent);}
+.dashboard-footer{text-align:center;font-size:11.5px;color:var(--text-secondary);padding:12px 0 24px;}
+@media (max-width:900px){.chart-row,.chart-row.equal,.chart-row.triple{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="dashboard-container">
+
+  <header class="dashboard-header">
+    <div>
+      <h1>DACH ESG, Climate Risk &amp; CSRD Intelligence Platform</h1>
+      <p>HTML preview mirroring the R Shiny dashboard's tabs — tries the local FastAPI first, falls back to embedded sample data.</p>
+    </div>
+    <div class="filters">
+      <span class="api-status offline" id="api-status">Checking API…</span>
+      <div class="filter-group">
+        <label>Country</label>
+        <select id="filter-country" onchange="dashboard.applyFilters()">
+          <option value="all">All (DACH)</option>
+          <option value="DE">Germany</option>
+          <option value="AT">Austria</option>
+          <option value="CH">Switzerland</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <div class="notice">
+    <strong>Live API mode:</strong> run <code>cd api &amp;&amp; uvicorn app.api.main:app --port 8000</code> locally (see README)
+    and reload this page — every tab below will switch from sample data to your live database automatically.
+    Right now: <span id="notice-status">checking…</span>.
+  </div>
+
+  <nav class="tab-nav" id="tab-nav"></nav>
+
+  <!-- 1. Executive Overview -->
+  <section class="tab-panel active" id="tab-overview">
+    <section class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">CO2 Emissions (latest yr, Mt)</div><div class="kpi-value" id="kpi-co2">–</div><div class="kpi-sub" id="kpi-co2-sub"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Renewable Share (%)</div><div class="kpi-value" id="kpi-renew">–</div><div class="kpi-sub" id="kpi-renew-sub"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Avg. Climate Risk Score</div><div class="kpi-value" id="kpi-risk">–</div><div class="kpi-sub" id="kpi-risk-sub"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Avg. CSRD Readiness</div><div class="kpi-value" id="kpi-csrd">–</div><div class="kpi-sub" id="kpi-csrd-sub"></div></div>
+    </section>
+    <section class="chart-row">
+      <div class="chart-container"><h3>CO2 Emissions Trend (2000–2023)</h3><canvas id="chart-co2-trend"></canvas></div>
+      <div class="chart-container"><h3>What changed? (AI panel)</h3><div id="ai-what-changed" class="ai-answer">–</div></div>
+    </section>
+  </section>
+
+  <!-- 2. Country Comparison -->
+  <section class="tab-panel" id="tab-comparison">
+    <section class="chart-row equal">
+      <div class="chart-container"><h3>Multi-country CO2 trend</h3><canvas id="chart-multiline"></canvas></div>
+      <div class="chart-container"><h3>Renewable share radar (latest year)</h3><canvas id="chart-radar"></canvas></div>
+    </section>
+  </section>
+
+  <!-- 3. Climate Risk Map -->
+  <section class="tab-panel" id="tab-map">
+    <div class="chart-container">
+      <h3>Regional composite climate risk (Leaflet, OpenStreetMap tiles)</h3>
+      <div id="leaflet-map"></div>
+    </div>
+  </section>
+
+  <!-- 4. ESG & CSRD Readiness -->
+  <section class="tab-panel" id="tab-esg">
+    <section class="chart-row equal">
+      <div class="chart-container"><h3>CSRD readiness gauge (avg)</h3><canvas id="chart-csrd-gauge"></canvas></div>
+      <div class="chart-container"><h3>ESG readiness gauge (avg)</h3><canvas id="chart-esg-gauge"></canvas></div>
+    </section>
+  </section>
+
+  <!-- 5. Forecasting Lab -->
+  <section class="tab-panel" id="tab-forecast">
+    <div class="panel-box">
+      <h3>Predictor &amp; Forecasting Lab — CO2 Emissions Predictor (representative of all 7 sub-tabs in the R app: CO2, Renewables, Price, Climate Risk, ESG Readiness, Scope 1/2/3, Scenario Simulator)</h3>
+      <div class="form-grid">
+        <div><label>Horizon (years)</label><select id="forecast-horizon" onchange="dashboard.renderForecast()"><option value="3">3</option><option value="5" selected>5</option><option value="10">10</option></select></div>
+      </div>
+      <canvas id="chart-forecast"></canvas>
+    </div>
+  </section>
+
+  <!-- 6. Scope 1/2/3 -->
+  <section class="tab-panel" id="tab-scope">
+    <section class="chart-row equal">
+      <div class="chart-container"><h3>Scope 1/2/3 by sector (stacked)</h3><canvas id="chart-scope-stack"></canvas></div>
+      <div class="chart-container"><h3>Emission distribution by sector (Scope 3)</h3><canvas id="chart-scope-box"></canvas></div>
+    </section>
+  </section>
+
+  <!-- 7. Energy Mix -->
+  <section class="tab-panel" id="tab-energy">
+    <section class="chart-row equal">
+      <div class="chart-container"><h3>Latest energy mix</h3><canvas id="chart-energy-mix"></canvas></div>
+      <div class="chart-container"><h3>Renewable share trend</h3><canvas id="chart-renew-trend"></canvas></div>
+    </section>
+  </section>
+
+  <!-- 8. Company ESG Input -->
+  <section class="tab-panel" id="tab-company">
+    <div class="panel-box">
+      <h3>Company ESG Input (adds to this session's chart below — not persisted)</h3>
+      <div class="form-grid">
+        <div><label>Company name</label><input id="in-name" value="New Sample Co"></div>
+        <div><label>Country</label><select id="in-country"><option value="DE">Germany</option><option value="AT">Austria</option><option value="CH">Switzerland</option></select></div>
+        <div><label>Sector</label><input id="in-sector" value="Technology"></div>
+        <div><label>ESG readiness (0-100)</label><input id="in-esg" type="number" value="60"></div>
+        <div><label>CSRD readiness (0-100)</label><input id="in-csrd" type="number" value="55"></div>
+      </div>
+      <button class="primary" onclick="dashboard.addCompany()">Submit</button>
+    </div>
+    <div class="chart-container"><h3>ESG readiness by sector (incl. your submission)</h3><canvas id="chart-esg-sector"></canvas></div>
+  </section>
+
+  <!-- 9. AI Assistant -->
+  <section class="tab-panel" id="tab-ai">
+    <div class="panel-box">
+      <h3>AI ESG Assistant — calls <code>POST /api/v1/ai/ask</code> on the free local API if running, otherwise shows an offline note</h3>
+      <textarea id="ai-question" rows="2" placeholder="Ask about DACH CO2, energy, or CSRD readiness..."></textarea>
+      <div style="margin-top:8px;"><button class="primary" onclick="dashboard.askAI()">Ask</button></div>
+      <div class="ai-answer" id="ai-answer-box">Ask a question above.</div>
+    </div>
+  </section>
+
+  <!-- 10. Report Export -->
+  <section class="tab-panel" id="tab-export">
+    <div class="panel-box">
+      <h3>Report Export &amp; Audit View</h3>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Export the currently loaded data (live from API if connected, otherwise sample data) as CSV.</p>
+      <button class="primary" onclick="dashboard.exportCSV('co2_energy')">Export CO2 &amp; Energy CSV</button>
+      <button class="primary" onclick="dashboard.exportCSV('climate_risk')" style="margin-left:8px;">Export Climate Risk CSV</button>
+      <button class="primary" onclick="dashboard.exportCSV('companies')" style="margin-left:8px;">Export Companies CSV</button>
+    </div>
+    <div class="table-section">
+      <h3>Audit trail (data source per table)</h3>
+      <div id="audit-table"></div>
+    </div>
+  </section>
+
+  <footer class="dashboard-footer">
+    DACH ESG, Climate Risk &amp; CSRD Intelligence Platform · HTML preview · mirrors r_dashboard/app tabs
+  </footer>
+</div>
+
+<script>
+/* ---- Embedded sample data (fallback when the free local API isn't running) ---- */
+const SAMPLE = {"co2_energy": [{"country_code": "DE", "country_name": "Germany", "year": 2000, "co2_emissions_mt": 943.93, "co2_per_capita_t": 11.14, "renewable_share_pct": 6.08, "fossil_share_pct": 87.7, "nuclear_share_pct": 6.2, "electricity_price_eur_mwh": 35.51}], "climate_risk": [], "companies": []};
+/* Full sample series is generated client-side below (same trend shape as scripts/generate_sample_data.py) so this file stays a manageable size while still giving every tab real-looking data. */
+(function generateFullSample(){
+  const countries = {DE:{co2_base:940,co2_2023:673,renew_base:6,renew_2023:52},AT:{co2_base:62,co2_2023:57,renew_base:60,renew_2023:78},CH:{co2_base:41,co2_2023:33,renew_base:68,renew_2023:79}};
+  const rows=[];
+  for(const [code,m] of Object.entries(countries)){
+    for(let y=2000;y<=2023;y++){
+      const t=(y-2000)/23, eased=1-Math.pow(1-t,1.6);
+      const co2=m.co2_base+(m.co2_2023-m.co2_base)*eased;
+      const renew=m.renew_base+(m.renew_2023-m.renew_base)*eased;
+      const fossil=Math.max(0,100-renew-5), nuclear=Math.max(0,100-renew-fossil);
+      rows.push({country_code:code,year:y,co2_emissions_mt:+co2.toFixed(1),renewable_share_pct:+renew.toFixed(1),fossil_share_pct:+fossil.toFixed(1),nuclear_share_pct:+nuclear.toFixed(1),electricity_price_eur_mwh:+(35+(y-2000)*2.1).toFixed(1)});
+    }
+  }
+  SAMPLE.co2_energy = rows;
+  const regions = {DE:['Bavaria','NRW','Baden-Württemberg','Lower Saxony','Hesse','Saxony','Berlin','Brandenburg'],
+    AT:['Vienna','Lower Austria','Upper Austria','Styria','Tyrol','Carinthia','Salzburg','Vorarlberg'],
+    CH:['Zurich','Bern','Vaud','Geneva','Aargau','St. Gallen','Ticino','Valais']};
+  const coords = {DE:[51.17,10.45],AT:[47.52,14.55],CH:[46.82,8.23]};
+  const riskRows=[]; let seed=1;
+  function rnd(){ seed=(seed*9301+49297)%233280; return seed/233280; }
+  for(const [code,list] of Object.entries(regions)){
+    list.forEach((region,i)=>{
+      const angle = (i/list.length)*2*Math.PI;
+      const composite = +(2+rnd()*7).toFixed(1);
+      riskRows.push({country_code:code, region, composite_climate_risk_score:composite,
+        risk_level: composite<4?'Low':composite<7?'Medium':'High',
+        lat: coords[code][0]+1.2*Math.sin(angle), lon: coords[code][1]+1.2*Math.cos(angle)});
+    });
+  }
+  SAMPLE.climate_risk = riskRows;
+  const sectors=['Energy','Financial Services','Manufacturing','Industrials','Consumer Goods','Technology','Real Estate','Transportation'];
+  const compRows=[];
+  for(let i=1;i<=40;i++){
+    const cc=['DE','AT','CH'][i%3];
+    compRows.push({company_id:'SAMPLE-'+i, company_name:'Sample Company '+i, country_code:cc,
+      sector: sectors[i%sectors.length],
+      scope1_tco2e: Math.round(500+rnd()*250000), scope2_tco2e: Math.round(200+rnd()*120000), scope3_tco2e: Math.round(2000+rnd()*900000),
+      esg_readiness_score: +(20+rnd()*75).toFixed(1), csrd_readiness_score: +(15+rnd()*75).toFixed(1)});
+  }
+  SAMPLE.companies = compRows;
+})();
+
+const COLORS = ['#0B3D2E','#C9A24B','#4C8C6B','#B24C4C','#1F5F4F','#8a8f6b'];
+const COUNTRY_NAMES = {DE:'Germany',AT:'Austria',CH:'Switzerland'};
+const API_BASE = 'http://localhost:8000';
+
+async function apiFetch(path){
+  try{
+    const resp = await fetch(API_BASE+path, {signal: AbortSignal.timeout(1500)});
+    if(!resp.ok) throw new Error('non-200');
+    const data = await resp.json();
+    if(Array.isArray(data) && data.length===0) throw new Error('empty');
+    return data;
+  }catch(e){ return null; }
+}
+
+class Dashboard {
+  constructor(){ this.charts={}; this.data={co2_energy:SAMPLE.co2_energy, climate_risk:SAMPLE.climate_risk, companies:SAMPLE.companies}; this.usingLive=false; this.init(); }
+
+  async init(){
+    this.setupTabs();
+    await this.checkApiAndLoad();
+    this.applyFilters();
+    this.renderMap();
+    this.renderForecast();
+    this.renderAudit();
+  }
+
+  setupTabs(){
+    const tabs = [
+      ['tab-overview','Executive Overview'],['tab-comparison','DACH Country Comparison'],
+      ['tab-map','Climate Risk Map'],['tab-esg','ESG & CSRD Readiness'],
+      ['tab-forecast','Predictor & Forecasting Lab'],['tab-scope','Scope 1/2/3 Emissions'],
+      ['tab-energy','Energy Mix & Renewables'],['tab-company','Company ESG Input'],
+      ['tab-ai','AI ESG Assistant'],['tab-export','Report Export & Audit'],
+    ];
+    const nav = document.getElementById('tab-nav');
+    tabs.forEach(([id,label],i)=>{
+      const btn = document.createElement('button');
+      btn.className = 'tab-btn'+(i===0?' active':'');
+      btn.textContent = label;
+      btn.onclick = ()=>{
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(id).classList.add('active');
+        if(id==='tab-map') setTimeout(()=>this.leafletMap && this.leafletMap.invalidateSize(), 50);
+      };
+      nav.appendChild(btn);
+    });
+  }
+
+  async checkApiAndLoad(){
+    const [co2, risk, companies] = await Promise.all([
+      apiFetch('/api/v1/co2-energy'), apiFetch('/api/v1/climate-risk'), apiFetch('/api/v1/companies')
+    ]);
+    const statusEl = document.getElementById('api-status');
+    const noticeEl = document.getElementById('notice-status');
+    if(co2 && risk && companies){
+      this.data = {co2_energy: co2, climate_risk: risk, companies: companies};
+      this.usingLive = true;
+      statusEl.textContent = 'API: LIVE'; statusEl.className='api-status live';
+      noticeEl.textContent = 'connected — showing your live database';
+    } else {
+      statusEl.textContent = 'API: offline (sample data)'; statusEl.className='api-status offline';
+      noticeEl.textContent = "not running — showing embedded sample data (that's OK, this file still fully works)";
+    }
+  }
+
+  getFilters(){ return { country: document.getElementById('filter-country').value }; }
+
+  applyFilters(){
+    const f = this.getFilters();
+    const co2 = f.country==='all' ? this.data.co2_energy : this.data.co2_energy.filter(r=>r.country_code===f.country);
+    const risk = f.country==='all' ? this.data.climate_risk : this.data.climate_risk.filter(r=>r.country_code===f.country);
+    const companies = f.country==='all' ? this.data.companies : this.data.companies.filter(r=>r.country_code===f.country);
+    this._co2=co2; this._risk=risk; this._companies=companies;
+
+    this.renderKPIs(co2, risk, companies);
+    this.renderCO2Trend(co2, f.country);
+    this.renderAIWhatChanged(co2);
+    this.renderMultiline();
+    this.renderRadar();
+    this.renderGauges(companies);
+    this.renderScopeStack(companies);
+    this.renderScopeBox(companies);
+    this.renderEnergyMix(co2);
+    this.renderRenewTrend(co2, f.country);
+    this.renderESGBySector(companies);
+    this.renderAudit();
+  }
+
+  renderKPIs(co2, risk, companies){
+    const latestYear = Math.max(...co2.map(r=>r.year));
+    const latest = co2.filter(r=>r.year===latestYear);
+    const avg = (arr,k)=> arr.length ? arr.reduce((a,r)=>a+ (+r[k]),0)/arr.length : 0;
+    document.getElementById('kpi-co2').textContent = avg(latest,'co2_emissions_mt').toFixed(1);
+    document.getElementById('kpi-co2-sub').textContent = latestYear + (this.usingLive?' · live':' · sample');
+    document.getElementById('kpi-renew').textContent = avg(latest,'renewable_share_pct').toFixed(1)+'%';
+    document.getElementById('kpi-renew-sub').textContent = latestYear;
+    document.getElementById('kpi-risk').textContent = avg(risk,'composite_climate_risk_score').toFixed(1)+'/10';
+    document.getElementById('kpi-risk-sub').textContent = risk.length+' regions';
+    document.getElementById('kpi-csrd').textContent = companies.length ? avg(companies,'csrd_readiness_score').toFixed(0)+'%' : 'N/A';
+    document.getElementById('kpi-csrd-sub').textContent = companies.length+' companies';
+  }
+
+  _mkChart(key, ctx, cfg){ if(this.charts[key]) this.charts[key].destroy(); this.charts[key] = new Chart(ctx, cfg); }
+
+  renderCO2Trend(co2, countryFilter){
+    const countries = countryFilter==='all' ? ['DE','AT','CH'] : [countryFilter];
+    const years = [...new Set(co2.map(r=>+r.year))].sort((a,b)=>a-b);
+    const datasets = countries.map((c,i)=>({label:COUNTRY_NAMES[c], borderColor:COLORS[i], backgroundColor:COLORS[i]+'22', borderWidth:2, tension:.3, pointRadius:1,
+      data: years.map(y=>{const row=co2.find(r=>r.country_code===c&&+r.year===y); return row?+row.co2_emissions_mt:null;})}));
+    this._mkChart('co2Trend', document.getElementById('chart-co2-trend').getContext('2d'), {type:'line', data:{labels:years,datasets},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{title:{display:true,text:'Mt CO2'}}}}});
+  }
+
+  renderAIWhatChanged(co2){
+    const box = document.getElementById('ai-what-changed');
+    if(co2.length<2){ box.textContent='Not enough data.'; return; }
+    const sorted=[...co2].sort((a,b)=>a.year-b.year);
+    const delta = sorted[sorted.length-1].co2_emissions_mt - sorted[sorted.length-2].co2_emissions_mt;
+    const dir = delta<0?'decreased':'increased';
+    box.textContent = `CO2 emissions ${dir} by ${Math.abs(delta).toFixed(1)} Mt in the most recent year (${sorted[sorted.length-1].year}). Recommended action: review progress against sector benchmarks and reflect in the next CSRD report.`;
+  }
+
+  renderMultiline(){
+    const years = [...new Set(this.data.co2_energy.map(r=>+r.year))].sort((a,b)=>a-b);
+    const datasets = ['DE','AT','CH'].map((c,i)=>({label:COUNTRY_NAMES[c], borderColor:COLORS[i], borderWidth:2, tension:.3, pointRadius:1,
+      data: years.map(y=>{const row=this.data.co2_energy.find(r=>r.country_code===c&&+r.year===y); return row?+row.co2_emissions_mt:null;})}));
+    this._mkChart('multiline', document.getElementById('chart-multiline').getContext('2d'), {type:'line', data:{labels:years,datasets},
+      options:{responsive:true,maintainAspectRatio:false}});
+  }
+
+  renderRadar(){
+    const latestYear = Math.max(...this.data.co2_energy.map(r=>+r.year));
+    const latest = ['DE','AT','CH'].map(c=> this.data.co2_energy.find(r=>r.country_code===c && +r.year===latestYear));
+    this._mkChart('radar', document.getElementById('chart-radar').getContext('2d'), {type:'radar',
+      data:{labels:['DE','AT','CH'], datasets:[{label:'Renewable %', data: latest.map(r=>r?+r.renewable_share_pct:0), backgroundColor:COLORS[0]+'33', borderColor:COLORS[0]}]},
+      options:{responsive:true,maintainAspectRatio:false, scales:{r:{min:0,max:100}}}});
+  }
+
+  renderGauges(companies){
+    const avg = k => companies.length ? companies.reduce((a,r)=>a+(+r[k]),0)/companies.length : 0;
+    const mkGauge = (id,val,label)=> this._mkChart(id, document.getElementById(id).getContext('2d'), {type:'doughnut',
+      data:{labels:[label,''], datasets:[{data:[val,100-val], backgroundColor:[val<40?COLORS[3]:val<70?COLORS[1]:COLORS[2], '#eee'], borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false, cutout:'75%', circumference:180, rotation:270,
+        plugins:{legend:{display:false}, tooltip:{enabled:false}}}});
+    mkGauge('chart-csrd-gauge', avg('csrd_readiness_score').toFixed(0), 'CSRD');
+    mkGauge('chart-esg-gauge', avg('esg_readiness_score').toFixed(0), 'ESG');
+  }
+
+  renderForecast(){
+    const h = +document.getElementById('forecast-horizon').value;
+    const de = this.data.co2_energy.filter(r=>r.country_code==='DE').sort((a,b)=>a.year-b.year);
+    if(de.length<3) return;
+    const n=de.length, xs=de.map(r=>+r.year), ys=de.map(r=>+r.co2_emissions_mt);
+    const xbar=xs.reduce((a,b)=>a+b,0)/n, ybar=ys.reduce((a,b)=>a+b,0)/n;
+    const slope = xs.reduce((a,x,i)=>a+(x-xbar)*(ys[i]-ybar),0) / xs.reduce((a,x)=>a+(x-xbar)**2,0);
+    const intercept = ybar - slope*xbar;
+    const lastYear = Math.max(...xs);
+    const futureYears = Array.from({length:h}, (_,i)=> lastYear+i+1);
+    const forecast = futureYears.map(y=> intercept + slope*y);
+    this._mkChart('forecast', document.getElementById('chart-forecast').getContext('2d'), {type:'line',
+      data:{labels:[...xs,...futureYears], datasets:[
+        {label:'Historical (DE)', data:[...ys, ...futureYears.map(()=>null)], borderColor:COLORS[0], borderWidth:2, pointRadius:1},
+        {label:'Forecast', data:[...xs.map(()=>null), ...forecast], borderColor:COLORS[1], borderDash:[6,4], borderWidth:2, pointRadius:2},
+      ]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{y:{title:{display:true,text:'Mt CO2'}}}}});
+  }
+
+  renderScopeStack(companies){
+    const bySector={};
+    companies.forEach(c=>{ const s=bySector[c.sector]=bySector[c.sector]||{s1:0,s2:0,s3:0}; s.s1+=+c.scope1_tco2e; s.s2+=+c.scope2_tco2e; s.s3+=+c.scope3_tco2e; });
+    const labels=Object.keys(bySector);
+    this._mkChart('scopeStack', document.getElementById('chart-scope-stack').getContext('2d'), {type:'bar',
+      data:{labels, datasets:[
+        {label:'Scope 1', data:labels.map(l=>bySector[l].s1), backgroundColor:COLORS[0]},
+        {label:'Scope 2', data:labels.map(l=>bySector[l].s2), backgroundColor:COLORS[1]},
+        {label:'Scope 3', data:labels.map(l=>bySector[l].s3), backgroundColor:COLORS[3]},
+      ]}, options:{responsive:true,maintainAspectRatio:false, scales:{x:{stacked:true},y:{stacked:true}}}});
+  }
+
+  renderScopeBox(companies){
+    // Chart.js has no native boxplot without a plugin; approximate with min/avg/max bar per sector.
+    const bySector={};
+    companies.forEach(c=>{ (bySector[c.sector]=bySector[c.sector]||[]).push(+c.scope3_tco2e); });
+    const labels=Object.keys(bySector);
+    const mins=labels.map(l=>Math.min(...bySector[l])), maxs=labels.map(l=>Math.max(...bySector[l])), avgs=labels.map(l=>bySector[l].reduce((a,b)=>a+b,0)/bySector[l].length);
+    this._mkChart('scopeBox', document.getElementById('chart-scope-box').getContext('2d'), {type:'bar',
+      data:{labels, datasets:[
+        {label:'Min', data:mins, backgroundColor:COLORS[2]+'99'},
+        {label:'Avg', data:avgs, backgroundColor:COLORS[0]+'99'},
+        {label:'Max', data:maxs, backgroundColor:COLORS[3]+'99'},
+      ]}, options:{responsive:true,maintainAspectRatio:false}});
+  }
+
+  renderEnergyMix(co2){
+    const latestYear = Math.max(...co2.map(r=>+r.year));
+    const latest = co2.filter(r=>+r.year===latestYear);
+    const avg=k=> latest.length ? latest.reduce((a,r)=>a+(+r[k]),0)/latest.length : 0;
+    this._mkChart('mix', document.getElementById('chart-energy-mix').getContext('2d'), {type:'doughnut',
+      data:{labels:['Renewable','Fossil','Nuclear'], datasets:[{data:[avg('renewable_share_pct'),avg('fossil_share_pct'),avg('nuclear_share_pct')], backgroundColor:[COLORS[2],COLORS[3],COLORS[1]], borderColor:'#fff', borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false, cutout:'60%', plugins:{legend:{position:'bottom'}}}});
+  }
+
+  renderRenewTrend(co2, countryFilter){
+    const countries = countryFilter==='all' ? ['DE','AT','CH'] : [countryFilter];
+    const years=[...new Set(co2.map(r=>+r.year))].sort((a,b)=>a-b);
+    const datasets = countries.map((c,i)=>({label:COUNTRY_NAMES[c], borderColor:COLORS[i], borderWidth:2, tension:.3, pointRadius:1,
+      data: years.map(y=>{const row=co2.find(r=>r.country_code===c&&+r.year===y); return row?+row.renewable_share_pct:null;})}));
+    this._mkChart('renewTrend', document.getElementById('chart-renew-trend').getContext('2d'), {type:'line', data:{labels:years,datasets},
+      options:{responsive:true,maintainAspectRatio:false, scales:{y:{title:{display:true,text:'% renewable'}}}}});
+  }
+
+  renderESGBySector(companies){
+    const bySector={};
+    companies.forEach(c=>{ (bySector[c.sector]=bySector[c.sector]||[]).push(+c.esg_readiness_score); });
+    const labels=Object.keys(bySector);
+    const avgs=labels.map(l=>bySector[l].reduce((a,b)=>a+b,0)/bySector[l].length);
+    this._mkChart('esgSector', document.getElementById('chart-esg-sector').getContext('2d'), {type:'bar',
+      data:{labels, datasets:[{label:'Avg ESG readiness', data:avgs, backgroundColor:COLORS[0]+'CC', borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false, scales:{y:{beginAtZero:true,max:100}}, plugins:{legend:{display:false}}}});
+  }
+
+  addCompany(){
+    const row = {
+      company_id: 'USR-'+Date.now(), company_name: document.getElementById('in-name').value,
+      country_code: document.getElementById('in-country').value, sector: document.getElementById('in-sector').value,
+      scope1_tco2e: 1000, scope2_tco2e: 500, scope3_tco2e: 5000,
+      esg_readiness_score: +document.getElementById('in-esg').value, csrd_readiness_score: +document.getElementById('in-csrd').value,
+    };
+    this.data.companies.push(row);
+    this.applyFilters();
+    alert('Company added to this session (client-side only — the real app persists via the API database).');
+  }
+
+  async askAI(){
+    const q = document.getElementById('ai-question').value;
+    const box = document.getElementById('ai-answer-box');
+    if(!q.trim()){ box.textContent='Type a question first.'; return; }
+    box.textContent = 'Asking...';
+    try{
+      const resp = await fetch(API_BASE+'/api/v1/ai/ask', {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({question:q, lang:'en'}), signal: AbortSignal.timeout(4000)});
+      if(!resp.ok) throw new Error('non-200');
+      const data = await resp.json();
+      box.textContent = data.answer;
+    }catch(e){
+      box.textContent = "[Offline] Couldn't reach the local API at "+API_BASE+"/api/v1/ai/ask. Start it with: cd api && uvicorn app.api.main:app --port 8000 — then ask again. General answer: DACH CO2 emissions have declined across Germany, Austria, and Switzerland since 2000, driven by renewable energy growth.";
+    }
+  }
+
+  renderMap(){
+    if(this.leafletMap) return;
+    this.leafletMap = L.map('leaflet-map').setView([48.5,10.5], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap contributors', maxZoom:10}).addTo(this.leafletMap);
+    this.data.climate_risk.forEach(r=>{
+      if(!r.lat || !r.lon) return;
+      const color = r.risk_level==='High' ? '#B24C4C' : r.risk_level==='Low' ? '#4C8C6B' : '#D6A24B';
+      L.circleMarker([r.lat, r.lon], {radius: 6+(+r.composite_climate_risk_score), color, fillColor:color, fillOpacity:0.75})
+        .bindPopup(`<strong>${r.region}</strong> (${r.country_code})<br>Composite risk: ${r.composite_climate_risk_score}/10<br>Level: ${r.risk_level}`)
+        .addTo(this.leafletMap);
+    });
+  }
+
+  renderAudit(){
+    const el = document.getElementById('audit-table');
+    const src = this.usingLive ? 'Live API (your local database)' : 'Embedded sample data (data_quality = "sample")';
+    el.innerHTML = `<table class="data-table"><thead><tr><th>Table</th><th>Source</th><th>Rows</th><th>Checked</th></tr></thead><tbody>
+      <tr><td>co2_energy</td><td>${src}</td><td>${this.data.co2_energy.length}</td><td>${new Date().toLocaleString()}</td></tr>
+      <tr><td>climate_risk</td><td>${src}</td><td>${this.data.climate_risk.length}</td><td>${new Date().toLocaleString()}</td></tr>
+      <tr><td>companies</td><td>${src}</td><td>${this.data.companies.length}</td><td>${new Date().toLocaleString()}</td></tr>
+    </tbody></table>`;
+  }
+
+  exportCSV(key){
+    const rows = this.data[key];
+    if(!rows.length) return;
+    const cols = Object.keys(rows[0]);
+    const csv = [cols.join(','), ...rows.map(r=>cols.map(c=>r[c]).join(','))].join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = key+'.csv'; a.click();
+  }
+}
+
+const dashboard = new Dashboard();
+</script>
+</body>
+</html>

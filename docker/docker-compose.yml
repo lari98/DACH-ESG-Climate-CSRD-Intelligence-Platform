@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATA_MODE=sample
+      - ENVIRONMENT=local
+
+  dashboard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.shiny
+    ports:
+      - "3838:3838"
+    depends_on:
+      - api
+    environment:
+      - ESG_API_BASE=http://api:8000
