@@ -11,22 +11,13 @@ mod_climate_map_ui <- function(id) {
     fluidRow(
       column(3, pickerInput(ns("country"), NULL, choices = c("All" = "ALL", COUNTRY_CHOICES), selected = "ALL")),
       column(3, selectInput(ns("map_style"), NULL,
-                             choices = c("Light (consulting)" = "CartoDB.PositronNoLabels",
-                                         "Dark mode" = "CartoDB.DarkMatterNoLabels",
-                                         "Standard" = "OpenStreetMap",
-                                         "Satellite" = "Esri.WorldImagery",
-                                         "Terrain" = "Esri.WorldTopoMap"))),
+                             choices = c("CartoDB.PositronNoLabels", "CartoDB.DarkMatterNoLabels",
+                                         "OpenStreetMap", "Esri.WorldImagery", "Esri.WorldTopoMap"))),
       column(3, selectInput(ns("layer"), NULL,
-                             choices = c("Composite risk (choropleth)" = "composite",
-                                         "Physical risk" = "physical",
-                                         "Transition risk" = "transition",
-                                         "Flood risk" = "flood",
-                                         "Heat stress" = "heat",
-                                         "Emission intensity (heatmap)" = "heatmap",
-                                         "Renewable energy layer" = "renewable"))),
+                             choices = c("composite", "physical", "transition", "flood", "heat",
+                                         "heatmap", "renewable"))),
       column(3, selectInput(ns("view"), NULL,
-                             choices = c("Present" = "present", "Past (baseline)" = "past",
-                                         "Future forecast" = "future", "Next-future scenario" = "next_future")))
+                             choices = c("present", "past", "future", "next_future")))
     ),
     fluidRow(
       column(9,
@@ -40,9 +31,9 @@ mod_climate_map_ui <- function(id) {
         )
       ),
       column(3,
-        box(width = NULL, title = "Region details", status = "primary", solidHeader = TRUE,
+        box(width = NULL, title = textOutput(ns("region_details_title")), status = "primary", solidHeader = TRUE,
             uiOutput(ns("region_detail"))),
-        box(width = NULL, title = "AI risk explanation", status = "warning", solidHeader = TRUE,
+        box(width = NULL, title = textOutput(ns("ai_risk_title")), status = "warning", solidHeader = TRUE,
             uiOutput(ns("ai_risk_panel")))
       )
     )
@@ -51,6 +42,37 @@ mod_climate_map_ui <- function(id) {
 
 mod_climate_map_server <- function(id, climate_risk_data, co2_energy_data, lang) {
   moduleServer(id, function(input, output, session) {
+
+    output$region_details_title <- renderText({ t("panel_region_details", lang()) })
+    output$ai_risk_title <- renderText({ t("panel_ai_risk_explanation", lang()) })
+
+    # Re-label the dropdowns whenever the language changes, keeping the current
+    # selection (the underlying values - "composite", "present", etc. - never change,
+    # only the displayed label does, so switching language never resets a filter).
+    observe({
+      updateSelectInput(session, "map_style", selected = isolate(input$map_style), choices = c(
+        setNames("CartoDB.PositronNoLabels", t("map_style_light", lang())),
+        setNames("CartoDB.DarkMatterNoLabels", t("theme_toggle_dark", lang())),
+        setNames("OpenStreetMap", t("map_style_standard", lang())),
+        setNames("Esri.WorldImagery", t("map_style_satellite", lang())),
+        setNames("Esri.WorldTopoMap", t("map_style_terrain", lang()))
+      ))
+      updateSelectInput(session, "layer", selected = isolate(input$layer), choices = c(
+        setNames("composite", t("map_layer_composite", lang())),
+        setNames("physical", t("map_layer_physical", lang())),
+        setNames("transition", t("map_layer_transition", lang())),
+        setNames("flood", t("map_layer_flood", lang())),
+        setNames("heat", t("map_layer_heat", lang())),
+        setNames("heatmap", t("map_layer_heatmap", lang())),
+        setNames("renewable", t("map_layer_renewable", lang()))
+      ))
+      updateSelectInput(session, "view", selected = isolate(input$view), choices = c(
+        setNames("present", t("map_view_present", lang())),
+        setNames("past", t("map_view_past", lang())),
+        setNames("future", t("map_view_future", lang())),
+        setNames("next_future", t("map_view_next_future", lang()))
+      ))
+    })
 
     # Deterministic synthetic centroids per region (demo only — replace with real
     # NUTS2/Kanton centroids in production, sourced from Eurostat/BFS geodata).
@@ -147,11 +169,11 @@ mod_climate_map_server <- function(id, climate_risk_data, co2_energy_data, lang)
     output$region_detail <- renderUI({
       req(selected_region())
       d <- view_adjusted() %>% filter(region == selected_region())
-      if (nrow(d) == 0) return(p("Click a marker to see region detail."))
+      if (nrow(d) == 0) return(p(t("map_region_click_hint", lang())))
       tagList(
         h4(selected_region()),
         p(strong(t("kpi_climate_risk", lang())), ": ", round(d$composite_climate_risk_score[1], 1)),
-        p(strong("Risk level"), ": ", d$risk_level[1])
+        p(strong(t("filter_risk_level", lang())), ": ", d$risk_level[1])
       )
     })
 

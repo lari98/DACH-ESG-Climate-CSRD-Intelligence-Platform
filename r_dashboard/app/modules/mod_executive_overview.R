@@ -38,7 +38,7 @@ mod_executive_overview_server <- function(id, co2_energy_data, climate_risk_data
     })
     output$trend_title <- renderText({ paste(t("kpi_co2", lang()), "-", t("filter_timeline", lang())) })
     output$ai_title <- renderText({ t("ai_what_changed", lang()) })
-    output$dq_title <- renderText({ "Data Quality Scorecard" })
+    output$dq_title <- renderText({ t("dq_scorecard_title", lang()) })
 
     filtered_co2 <- reactive({
       req(co2_energy_data())

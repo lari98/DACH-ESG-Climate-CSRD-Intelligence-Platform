@@ -6,7 +6,22 @@ All notable changes to this project are documented here. Versioning follows
 - **MINOR** — new features, additive and backward-compatible
 - **PATCH** — bug fixes, no new features
 
-Current version: **1.7.0** (see `VERSION`)
+Current version: **1.8.0** (see `VERSION`)
+
+## [1.8.0] - Full EN/DE translation coverage + treemap readability
+
+- Fixed a real gap in the bilingual requirement: only the sidebar/tab labels and a
+  handful of top-level outputs were actually wired to the translation system —
+  most box titles, chart/series titles, axis labels, and dropdown choices inside
+  every module were hardcoded English strings that never changed when switching to
+  German. Added ~70 new keys to `lang/translations.R` and routed every module's UI
+  text through `t(key, lang())`, including dynamic dropdown re-labeling (via
+  `updateSelectInput`/`updatePickerInput`/etc.) for filters like the Climate Risk
+  Map's style/layer/view selectors and the Company ESG Input form.
+- Fixed the Scope 1/2/3 treemap's unreadable leaf labels (previously
+  `"<sector> <scope>"`, e.g. "Real Estate Scope3", overflowing tiny boxes) — leaves
+  now show just the scope name with the sector as the parent box, using explicit
+  `ids` for correct hierarchy, plus a larger, consistent text size.
 
 ## [1.7.0] - Self-healing database schema
 

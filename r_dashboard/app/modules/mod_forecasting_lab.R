@@ -17,14 +17,14 @@ mod_forecast_generic_ui <- function(id, title_key) {
       box(width = 9, title = uiOutput(ns("chart_title")), status = "success", solidHeader = TRUE,
           plotlyOutput(ns("forecast_chart"), height = "420px")),
       column(3,
-        box(width = NULL, title = "Risk level", status = "warning", solidHeader = TRUE,
+        box(width = NULL, title = textOutput(ns("risk_level_title")), status = "warning", solidHeader = TRUE,
             uiOutput(ns("risk_indicator"))),
-        box(width = NULL, title = "AI insight", status = "primary", solidHeader = TRUE,
+        box(width = NULL, title = textOutput(ns("ai_insight_title")), status = "primary", solidHeader = TRUE,
             uiOutput(ns("ai_insight")))
       )
     ),
     fluidRow(
-      box(width = 12, title = "Scenario comparison", status = "primary", solidHeader = TRUE,
+      box(width = 12, title = textOutput(ns("scenario_compare_title")), status = "primary", solidHeader = TRUE,
           plotlyOutput(ns("scenario_compare"), height = "300px"))
     )
   )
@@ -43,6 +43,9 @@ mod_forecast_generic_server <- function(id, source_data, lang, title_key, get_se
   moduleServer(id, function(input, output, session) {
 
     output$chart_title <- renderUI({ paste(t(title_key, lang()), "-", t("filter_horizon", lang())) })
+    output$risk_level_title <- renderText({ t("filter_risk_level", lang()) })
+    output$ai_insight_title <- renderText({ t("panel_ai_insight", lang()) })
+    output$scenario_compare_title <- renderText({ t("chart_scenario_comparison", lang()) })
 
     hist_series <- reactive({
       req(source_data())
@@ -61,11 +64,11 @@ mod_forecast_generic_server <- function(id, source_data, lang, title_key, get_se
       d <- hist_series(); f <- fc()
       plot_ly() %>%
         add_trace(data = d, x = ~year, y = ~value, type = "scatter", mode = "lines+markers",
-                  name = "Historical / Current", line = list(color = THEME$primary)) %>%
-        add_ribbons(data = f, x = ~year, ymin = ~lower, ymax = ~upper, name = "95% CI",
+                  name = t("series_historical_current", lang()), line = list(color = THEME$primary)) %>%
+        add_ribbons(data = f, x = ~year, ymin = ~lower, ymax = ~upper, name = t("series_ci95", lang()),
                     fillcolor = "rgba(201,162,75,0.25)", line = list(color = "transparent")) %>%
         add_trace(data = f, x = ~year, y = ~forecast, type = "scatter", mode = "lines+markers",
-                  name = "Forecast", line = list(color = THEME$accent, dash = "dash")) %>%
+                  name = t("series_forecast", lang()), line = list(color = THEME$accent, dash = "dash")) %>%
         layout(yaxis = list(title = unit_label), xaxis = list(title = ""))
     })
 

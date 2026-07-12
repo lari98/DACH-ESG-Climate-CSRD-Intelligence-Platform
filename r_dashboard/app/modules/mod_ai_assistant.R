@@ -6,17 +6,17 @@ mod_ai_assistant_ui <- function(id) {
   ns <- NS(id)
   fluidPage(
     fluidRow(
-      box(width = 12, title = "Ask the ESG / CSRD assistant", status = "success", solidHeader = TRUE,
+      box(width = 12, title = textOutput(ns("ask_panel_title")), status = "success", solidHeader = TRUE,
           textAreaInput(ns("question"), NULL, placeholder = "", width = "100%", rows = 2),
           actionButton(ns("ask"), "Ask", class = "btn-success"),
           hr(),
           uiOutput(ns("answer")))
     ),
     fluidRow(
-      box(width = 6, title = "CSRD readiness assistant", status = "primary", solidHeader = TRUE,
-          pickerInput(ns("company_id"), "Company", choices = NULL),
+      box(width = 6, title = textOutput(ns("csrd_panel_title")), status = "primary", solidHeader = TRUE,
+          pickerInput(ns("company_id"), NULL, choices = NULL),
           uiOutput(ns("csrd_summary"))),
-      box(width = 6, title = "Anomaly explanation", status = "warning", solidHeader = TRUE,
+      box(width = 6, title = textOutput(ns("anomaly_panel_title")), status = "warning", solidHeader = TRUE,
           uiOutput(ns("anomaly_panel")))
     )
   )
@@ -25,9 +25,14 @@ mod_ai_assistant_ui <- function(id) {
 mod_ai_assistant_server <- function(id, co2_energy_data, climate_risk_data, company_data, lang) {
   moduleServer(id, function(input, output, session) {
 
+    output$ask_panel_title <- renderText({ t("panel_ask_assistant", lang()) })
+    output$csrd_panel_title <- renderText({ t("panel_csrd_assistant", lang()) })
+    output$anomaly_panel_title <- renderText({ t("panel_anomaly_explanation", lang()) })
+
     observe({
       updateTextAreaInput(session, "question", placeholder = t("ai_ask_placeholder", lang()))
-      updatePickerInput(session, "company_id",
+      updateActionButton(session, "ask", label = t("btn_ask", lang()))
+      updatePickerInput(session, "company_id", label = t("lbl_company", lang()),
                          choices = setNames(company_data()$company_id, company_data()$company_name))
     })
 

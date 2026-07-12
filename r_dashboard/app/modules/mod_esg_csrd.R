@@ -8,13 +8,13 @@ mod_esg_csrd_ui <- function(id) {
       column(4, pickerInput(ns("sector"), NULL, choices = "All", selected = "All"))
     ),
     fluidRow(
-      box(width = 6, title = "CSRD Readiness Gauge", status = "success", solidHeader = TRUE,
+      box(width = 6, title = textOutput(ns("csrd_gauge_title")), status = "success", solidHeader = TRUE,
           plotlyOutput(ns("csrd_gauge"), height = "300px")),
-      box(width = 6, title = "ESG Readiness Gauge", status = "success", solidHeader = TRUE,
+      box(width = 6, title = textOutput(ns("esg_gauge_title")), status = "success", solidHeader = TRUE,
           plotlyOutput(ns("esg_gauge"), height = "300px"))
     ),
     fluidRow(
-      box(width = 12, title = "Company benchmarking (drill-down)", status = "primary", solidHeader = TRUE,
+      box(width = 12, title = textOutput(ns("table_title")), status = "primary", solidHeader = TRUE,
           DTOutput(ns("table")))
     )
   )
@@ -22,6 +22,10 @@ mod_esg_csrd_ui <- function(id) {
 
 mod_esg_csrd_server <- function(id, company_data, lang) {
   moduleServer(id, function(input, output, session) {
+
+    output$csrd_gauge_title <- renderText({ t("gauge_csrd_readiness", lang()) })
+    output$esg_gauge_title <- renderText({ t("gauge_esg_readiness", lang()) })
+    output$table_title <- renderText({ t("table_company_benchmark", lang()) })
 
     observe({
       updatePickerInput(session, "sector", choices = c("All", sort(unique(company_data()$sector))))

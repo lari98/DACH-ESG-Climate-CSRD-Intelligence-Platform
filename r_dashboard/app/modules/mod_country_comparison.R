@@ -13,13 +13,13 @@ mod_country_comparison_ui <- function(id) {
                                          "Electricity price (EUR/MWh)" = "electricity_price_eur_mwh")))
     ),
     fluidRow(
-      box(width = 8, title = "Multi-country trend", status = "success", solidHeader = TRUE,
+      box(width = 8, title = textOutput(ns("multiline_title")), status = "success", solidHeader = TRUE,
           plotlyOutput(ns("multiline"), height = "380px")),
-      box(width = 4, title = "ESG Maturity Radar", status = "success", solidHeader = TRUE,
+      box(width = 4, title = textOutput(ns("radar_title")), status = "success", solidHeader = TRUE,
           plotlyOutput(ns("radar"), height = "380px"))
     ),
     fluidRow(
-      box(width = 12, title = "Drill-down data", status = "primary", solidHeader = TRUE,
+      box(width = 12, title = textOutput(ns("table_title")), status = "primary", solidHeader = TRUE,
           DTOutput(ns("table")))
     )
   )
@@ -27,6 +27,10 @@ mod_country_comparison_ui <- function(id) {
 
 mod_country_comparison_server <- function(id, co2_energy_data, lang) {
   moduleServer(id, function(input, output, session) {
+
+    output$multiline_title <- renderText({ t("chart_multiline_trend", lang()) })
+    output$radar_title <- renderText({ t("chart_esg_radar", lang()) })
+    output$table_title <- renderText({ t("table_drilldown_data", lang()) })
 
     filtered <- reactive({
       req(co2_energy_data())
@@ -46,7 +50,7 @@ mod_country_comparison_server <- function(id, co2_energy_data, lang) {
       d <- filtered() %>% filter(year == max(year))
       safe_validate(nrow(d) > 0, "No data")
       plot_ly(type = "scatterpolar", fill = "toself") %>%
-        add_trace(r = d$renewable_share_pct, theta = d$country_code, name = "Renewable %") %>%
+        add_trace(r = d$renewable_share_pct, theta = d$country_code, name = t("series_renewable_pct", lang())) %>%
         layout(polar = list(radialaxis = list(visible = TRUE, range = c(0, 100))))
     })
 
