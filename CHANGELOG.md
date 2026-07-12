@@ -6,7 +6,19 @@ All notable changes to this project are documented here. Versioning follows
 - **MINOR** — new features, additive and backward-compatible
 - **PATCH** — bug fixes, no new features
 
-Current version: **1.9.0** (see `VERSION`)
+Current version: **1.9.1** (see `VERSION`)
+
+## [1.9.1] - Fix CI: python-tests job failing on every push
+
+- `.github/workflows/ci.yml`'s `python-tests` job had a pre-existing bug (present
+  since the initial scaffold, unrelated to recent feature work): the "Generate sample
+  data" step set `working-directory: .`, which GitHub Actions resolves relative to the
+  repo root, overriding (not appending to) the job's `defaults.run.working-directory:
+  api`. Since the step's command (`python ../scripts/generate_sample_data.py`) assumed
+  it was running from `api/`, it looked one directory too high and failed with
+  "No such file or directory" on every CI run. Removed the incorrect override so the
+  step correctly inherits the job's `api/` working directory, matching the pattern
+  already used correctly in the `data-quality-tests` job.
 
 ## [1.9.0] - Fully automatic background data refresh
 

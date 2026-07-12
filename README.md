@@ -6,7 +6,7 @@ Azure, R Shiny, and AI/LLM assistance.
 
 | | |
 |---|---|
-| **Current version** | 1.9.0 |
+| **Current version** | 1.9.1 |
 | **Version history** | [`CHANGELOG.md`](./CHANGELOG.md) — what changed in every release |
 | **Version source of truth** | [`VERSION`](./VERSION) — also returned live by the API at `GET /health` |
 | **Business case, target users, KPIs** | [`docs/01_business_scope.md`](./docs/01_business_scope.md) |
