@@ -6,7 +6,21 @@ All notable changes to this project are documented here. Versioning follows
 - **MINOR** — new features, additive and backward-compatible
 - **PATCH** — bug fixes, no new features
 
-Current version: **1.8.0** (see `VERSION`)
+Current version: **1.9.0** (see `VERSION`)
+
+## [1.9.0] - Fully automatic background data refresh
+
+- The database schema self-heals automatically on every API start (v1.7.0), but the
+  *data itself* still needed a manual `start_api.bat refresh` — the root cause of the
+  Executive Overview badge repeatedly showing "Sample" even after the pipeline fixes
+  in v1.5.0. Added `app/core/scheduler.py`: a background daemon thread that pulls
+  fresh data (ingest -> clean -> validate -> reconcile -> load) immediately on API
+  startup and every `auto_refresh_interval_seconds` (default 3600s) after that, with
+  zero manual commands ever required. Controlled via `AUTO_REFRESH_ENABLED` /
+  `AUTO_REFRESH_INTERVAL_SECONDS` in `.env`.
+- Migrated `app/api/main.py` off the deprecated `@app.on_event("startup")` API to
+  FastAPI's `lifespan` context manager (this sandbox's installed FastAPI 0.139
+  flagged the old API as deprecated).
 
 ## [1.8.0] - Full EN/DE translation coverage + treemap readability
 

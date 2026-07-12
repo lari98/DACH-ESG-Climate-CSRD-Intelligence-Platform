@@ -9,6 +9,7 @@ Docs:
 from __future__ import annotations
 
 import time
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,18 +24,24 @@ from app.db.models import CO2Energy, CompanyESG, RegionalClimateRisk
 logger = get_logger(__name__)
 settings = get_settings()
 
-app = FastAPI(title=settings.api_title, version=settings.api_version)
-app.include_router(ai_router)
 
-
-@app.on_event("startup")
-def _auto_migrate_on_startup() -> None:
-    """Runs on every API start AND every uvicorn --reload auto-restart (i.e. every time
-    a code edit is picked up), so schema fixes apply themselves with no manual migration
-    step - see app.db.session.ensure_schema_up_to_date."""
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    # Startup: runs on every API start AND every uvicorn --reload auto-restart (i.e.
+    # every time a code edit is picked up), so schema fixes AND data refreshes apply
+    # themselves with no manual migration/refresh step ever required - see
+    # app.db.session.ensure_schema_up_to_date and app.core.scheduler.
+    from app.core.scheduler import start_background_refresh
     from app.db.session import init_db
 
     init_db()
+    start_background_refresh()
+    yield
+    # (no shutdown work needed - the auto-refresh thread is a daemon thread)
+
+
+app = FastAPI(title=settings.api_title, version=settings.api_version, lifespan=_lifespan)
+app.include_router(ai_router)
 
 app.add_middleware(
     CORSMiddleware,

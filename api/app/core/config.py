@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     # Data mode: "sample" (bundled generated data) or "live" (pull from public sources)
     data_mode: str = "sample"
 
+    # Background auto-refresh: when True, the API pulls fresh data (ingest -> clean ->
+    # validate/reconcile -> load) automatically on startup and every auto_refresh_interval_seconds
+    # after that - no manual "start_api.bat refresh" ever required. See app.core.scheduler.
+    auto_refresh_enabled: bool = True
+    auto_refresh_interval_seconds: int = 3600
+
     # Local storage
     raw_dir: Path = DATA_DIR / "raw"
     cleaned_dir: Path = DATA_DIR / "cleaned"
