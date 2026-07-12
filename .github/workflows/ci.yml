@@ -27,6 +27,28 @@ jobs:
         env:
           DATABASE_URL: sqlite:////tmp/ci_esg_platform.db
 
+  data-quality-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r api/requirements.txt
+      - name: Generate + ingest + clean sample data
+        run: |
+          python scripts/generate_sample_data.py
+          cd api
+          python -m app.ingestion.run_all
+          python -m app.cleaning.clean
+        env:
+          DATABASE_URL: sqlite:////tmp/ci_esg_platform.db
+      - name: Run data quality test suite
+        run: pytest data_quality_tests -q
+        env:
+          DATABASE_URL: sqlite:////tmp/ci_esg_platform.db
+
   r-lint:
     runs-on: ubuntu-latest
     steps:

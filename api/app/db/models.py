@@ -16,12 +16,14 @@ class CO2Energy(Base):
     country_code: Mapped[str] = mapped_column(String(2), index=True)
     year: Mapped[int] = mapped_column(Integer, index=True)
     co2_emissions_mt: Mapped[float] = mapped_column(Float)
-    co2_per_capita_t: Mapped[float] = mapped_column(Float)
     renewable_share_pct: Mapped[float] = mapped_column(Float)
-    fossil_share_pct: Mapped[float] = mapped_column(Float)
-    nuclear_share_pct: Mapped[float] = mapped_column(Float)
-    electricity_generation_twh: Mapped[float] = mapped_column(Float)
-    electricity_price_eur_mwh: Mapped[float] = mapped_column(Float)
+    # Optional: not every free live source publishes these for every country/year
+    # (see app.validation.schemas.CO2EnergyRecord for the matching Optional fields).
+    co2_per_capita_t: Mapped[float | None] = mapped_column(Float, nullable=True)
+    fossil_share_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
+    nuclear_share_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
+    electricity_generation_twh: Mapped[float | None] = mapped_column(Float, nullable=True)
+    electricity_price_eur_mwh: Mapped[float | None] = mapped_column(Float, nullable=True)
     data_quality: Mapped[str] = mapped_column(String(20))
 
 

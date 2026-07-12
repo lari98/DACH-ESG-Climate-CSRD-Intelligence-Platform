@@ -36,7 +36,12 @@ def validate_dataframe(df: pd.DataFrame, model: type[BaseModel], dataset_name: s
     errors: list[str] = []
     for i, row in df.iterrows():
         try:
-            record = model(**row.to_dict())
+            # pandas round-trips missing optional values (e.g. electricity price, absent
+            # from free live sources) as NaN, not None/absent. Pydantic's numeric
+            # constraints (e.g. ge=0) reject NaN even on Optional fields since
+            # `float('nan') >= 0` is False, so translate NaN -> None before validating.
+            row_dict = {k: (None if pd.isna(v) else v) for k, v in row.to_dict().items()}
+            record = model(**row_dict)
             valid_records.append(record.model_dump())
         except ValidationError as exc:
             errors.append(f"row {i}: {exc.errors()[0]['msg']}")

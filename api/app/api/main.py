@@ -26,6 +26,16 @@ settings = get_settings()
 app = FastAPI(title=settings.api_title, version=settings.api_version)
 app.include_router(ai_router)
 
+
+@app.on_event("startup")
+def _auto_migrate_on_startup() -> None:
+    """Runs on every API start AND every uvicorn --reload auto-restart (i.e. every time
+    a code edit is picked up), so schema fixes apply themselves with no manual migration
+    step - see app.db.session.ensure_schema_up_to_date."""
+    from app.db.session import init_db
+
+    init_db()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # tighten in production to the dashboard's origin
@@ -45,7 +55,12 @@ async def log_requests(request, call_next):
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok", "environment": settings.environment, "data_mode": settings.data_mode}
+    return {
+        "status": "ok",
+        "version": settings.api_version,
+        "environment": settings.environment,
+        "data_mode": settings.data_mode,
+    }
 
 
 @app.get("/api/v1/co2-energy")

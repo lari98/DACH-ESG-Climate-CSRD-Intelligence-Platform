@@ -10,6 +10,16 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = PROJECT_ROOT / "data"
 
 
+def _read_project_version() -> str:
+    """Reads the single source of truth (VERSION file, see CHANGELOG.md) so the API's
+    reported version never drifts out of sync with a hardcoded string."""
+    version_file = PROJECT_ROOT / "VERSION"
+    try:
+        return version_file.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        return "0.0.0-unknown"
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=str(PROJECT_ROOT / ".env"), extra="ignore")
 
@@ -40,7 +50,7 @@ class Settings(BaseSettings):
 
     # API
     api_title: str = "DACH ESG, Climate Risk & CSRD Intelligence Platform API"
-    api_version: str = "0.1.0"
+    api_version: str = _read_project_version()
     log_level: str = "INFO"
 
 

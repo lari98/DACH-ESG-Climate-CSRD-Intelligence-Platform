@@ -1,5 +1,9 @@
 # DACH ESG, Climate Risk & CSRD Intelligence Platform
 
+**Version 1.7.0** — see [`CHANGELOG.md`](./CHANGELOG.md) for the full version history and
+what changed in each release. Current version is also tracked in [`VERSION`](./VERSION) and
+returned live by the API at `GET /health`.
+
 An end-to-end, portfolio-grade reference platform for ESG, climate risk, and CSRD reporting
 intelligence across **Germany, Austria, and Switzerland** — built with Python, Databricks,
 Azure, R Shiny, and AI/LLM assistance.
@@ -31,6 +35,7 @@ DACH-ESG-Climate-CSRD-Intelligence-Platform/
 │       ├── lang/                EN/DE translation dictionary
 │       ├── data/                 API client / local CSV fallback
 │       └── www/                  Enterprise DACH CSS theme
+├── data_quality_tests/        Standalone source/data QA suite (15 categories - see its README)
 ├── azure/                     Bicep IaC + Azure Function (hourly ingestion timer trigger)
 ├── docker/                    Dockerfiles + docker-compose for API + dashboard
 ├── .github/workflows/        CI: Python tests, R syntax check, Docker build
@@ -62,6 +67,37 @@ R -e "shiny::runApp('app', port = 3838)"
 
 Or with Docker: `docker compose -f docker/docker-compose.yml up --build`.
 
+**Fastest path (Windows, one command):** `api\start_api.bat` — pulls live data only on
+first run (or when passed `refresh`), otherwise starts instantly, and auto-launches the
+R dashboard in a second window. Both the API and dashboard auto-reload on code changes
+and the database schema auto-migrates itself on every restart — see `CHANGELOG.md` 1.3.0
+and 1.7.0.
+
+## API Reference
+
+Base URL: `http://localhost:8000` (local) — interactive docs always available live at
+`/docs`. All endpoints are free to call locally; no API key required.
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/health` | Liveness check — returns `status`, `version`, `environment`, `data_mode` |
+| GET | `/api/v1/co2-energy` | CO2/energy records. Query params: `country`, `year_from`, `year_to` |
+| GET | `/api/v1/climate-risk` | Regional climate risk scores. Query param: `country` |
+| GET | `/api/v1/companies` | Company ESG records. Query params: `country`, `sector` |
+| GET | `/api/v1/companies/{company_id}` | Single company by ID (404 if not found) |
+| POST | `/api/v1/ai/ask` | Free-form Q&A over the loaded data. Body: `{question, lang}` |
+| POST | `/api/v1/ai/csrd-readiness` | CSRD readiness summary for a company. Body: `{company_id, lang}` |
+| POST | `/api/v1/ai/anomaly-explanation` | Explains a detected anomaly. Body: `{column, relative_change, lang}` |
+| POST | `/api/v1/ai/summarize-report` | Summarizes pasted ESG report text. Body: `{report_text, lang}` |
+| POST | `/api/v1/ai/executive-summary` | Executive summary from a KPI dict. Body: `{kpis, lang}` |
+| POST | `/api/v1/ai/risk-recommendation` | Risk-mitigation recommendations. Body: `{risk_profile, lang}` |
+
+`/summarize-report`, `/executive-summary`, and `/risk-recommendation` return a
+`GroundedResponse`: `{text, grounded, warning}`, where `grounded=false` means the
+hallucination-control check couldn't fully verify the answer against source data
+(`/ask` and `/csrd-readiness`/`/anomaly-explanation` return simpler `{answer}` /
+`{summary}` shapes) — see `docs/05_ai_llm_design.md`.
+
 ## Cost & Data Freshness
 
 Every wired data source is free with no API key (Our World in Data, Eurostat, ENTSO-E). See
@@ -71,12 +107,15 @@ reconciliation gate protects against bad pulls.
 
 ## Testing
 
-```bash
-cd api && pytest -q          # 10 tests: cleaning, validation, reconciliation, API, AI
-```
+| Suite | Location | Run with | Covers |
+|---|---|---|---|
+| Application tests | `api/tests/` | `cd api && pytest -q` | Cleaning, validation, reconciliation, DB, API endpoints, AI grounding, security/GDPR, performance |
+| Data quality tests | `data_quality_tests/` | `pytest data_quality_tests -v` | 15 categories: source availability, connection, auth, schema, columns, types, record counts, freshness, completeness, duplicates, nulls, encoding, timestamps, referential integrity, PII classification — see its own `README.md` |
+| R dashboard tests | `r_dashboard/tests/` | `Rscript -e "testthat::test_dir('tests/testthat')"` (from `r_dashboard/`) | Translation dictionary, forecast helper functions, app smoke test (`shinytest2`) |
+| R syntax check | all `r_dashboard/**/*.R` | runs automatically in CI | Every `.R` file parses without error |
 
-R files are syntax-checked in CI (`.github/workflows/ci.yml`); a full `shinytest2` suite is
-the natural next step once deployed to an R environment.
+All four run automatically in CI on every push (`.github/workflows/ci.yml`): `python-tests`,
+`data-quality-tests`, `r-lint`, and `docker-build` jobs.
 
 ## License / Attribution
 
