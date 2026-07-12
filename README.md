@@ -1,14 +1,15 @@
 # DACH ESG, Climate Risk & CSRD Intelligence Platform
 
-**Version 1.7.0** — see [`CHANGELOG.md`](./CHANGELOG.md) for the full version history and
-what changed in each release. Current version is also tracked in [`VERSION`](./VERSION) and
-returned live by the API at `GET /health`.
-
 An end-to-end, portfolio-grade reference platform for ESG, climate risk, and CSRD reporting
 intelligence across **Germany, Austria, and Switzerland** — built with Python, Databricks,
 Azure, R Shiny, and AI/LLM assistance.
 
-See `docs/01_business_scope.md` for the full business case, target users, and KPIs.
+| | |
+|---|---|
+| **Current version** | 1.7.0 |
+| **Version history** | [`CHANGELOG.md`](./CHANGELOG.md) — what changed in every release |
+| **Version source of truth** | [`VERSION`](./VERSION) — also returned live by the API at `GET /health` |
+| **Business case, target users, KPIs** | [`docs/01_business_scope.md`](./docs/01_business_scope.md) |
 
 ## Repository Structure
 
